@@ -51,7 +51,7 @@ def create_app(settings: Settings | None = None, *, testing=False):
         yield
         engine.dispose()
 
-    app = FastAPI(title="Caixa Solidário API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="Ingresso Solidário API", version="1.0.0", lifespan=lifespan)
     app.state.engine, app.state.sessions = engine, sessions
     attempts = defaultdict(deque)
 

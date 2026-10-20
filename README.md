@@ -1,4 +1,4 @@
-# Caixa Solidário
+# Ingresso Solidário
 
 Sistema de caixa para venda de alimentos e emissão de vouchers em eventos. Criado a partir do fluxo do seminário **Varejo que dá resultado**, do SEBRAE.
 
@@ -54,7 +54,7 @@ Pagamentos são confirmados pelo operador. O sistema não cobra cartões, não c
 
 ```dotenv
 RESEND_API_KEY=sua-chave
-RECEIPT_FROM=Caixa Solidario <recibos@seu-dominio.com>
+RECEIPT_FROM=Ingresso Solidário <recibos@seu-dominio.com>
 ```
 
 O remetente precisa estar verificado no provedor. Recrie o backend após alterar variáveis:
