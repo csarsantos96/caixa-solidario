@@ -164,3 +164,11 @@ As chamadas de escrita exigem um cabeçalho próprio de proteção CSRF e a apli
 A aplicação já pode ser containerizada em outra infraestrutura. Terraform e migração para serviços gerenciados AWS ficam para uma etapa posterior, depois de definir custo e arquitetura. Nenhum recurso AWS é criado pelo pacote.
 
 Documentação das tecnologias: [FastAPI](https://fastapi.tiangolo.com/), [React](https://react.dev/), [Vite](https://vite.dev/), [SQLAlchemy](https://docs.sqlalchemy.org/), [Alembic](https://alembic.sqlalchemy.org/).
+
+## Verificação de credenciais expostas
+
+O workflow `.github/workflows/secrets.yml` usa o [Gitleaks](https://github.com/gitleaks/gitleaks) para procurar possíveis senhas, tokens, chaves privadas e credenciais no histórico Git disponível, em cada push, pull request e às segundas-feiras. Também pode ser executado manualmente em **Actions → Secret scan → Run workflow**.
+
+A verificação falha quando encontra uma possível credencial e oculta os valores nos logs. Não exige configurar secrets do GitHub. Para impedir merges quando ela falhar, configure a regra de proteção da branch para exigir o check **Detect exposed credentials**.
+
+Se uma credencial real for detectada, revogue ou troque a credencial no serviço de origem; apagar apenas o arquivo atual não remove o segredo do histórico. A detecção usa padrões e pode produzir falsos positivos ou deixar passar senhas: um resultado aprovado não garante ausência de credenciais.
