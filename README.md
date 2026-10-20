@@ -1,4 +1,4 @@
-# Ingresso Solidário
+# Bilhete Solidário
 
 Sistema de caixa para venda de alimentos e emissão de vouchers em eventos. Criado a partir do fluxo do seminário **Varejo que dá resultado**, do SEBRAE.
 
@@ -54,7 +54,7 @@ Pagamentos são confirmados pelo operador. O sistema não cobra cartões, não c
 
 ```dotenv
 RESEND_API_KEY=sua-chave
-RECEIPT_FROM=Ingresso Solidário <recibos@seu-dominio.com>
+RECEIPT_FROM="Bilhete Solidário <recibo@bilhetesolidario.com.br>"
 ```
 
 O remetente precisa estar verificado no provedor. Recrie o backend após alterar variáveis:
@@ -63,7 +63,9 @@ O remetente precisa estar verificado no provedor. Recrie o backend após alterar
 docker compose up -d --force-recreate backend
 ```
 
-O botão de envio automático só aparece com as duas configurações. O aceite pelo provedor não garante entrega na caixa de entrada. A implementação usa idempotência e registra o envio. SMS ainda não está implementado.
+Com as duas configurações ativas, informe o e-mail do cliente ao fechar a compra. Ao confirmar o pagamento no caixa (ou marcar uma venda pendente como paga), a interface solicita o envio diretamente, sem abrir o aplicativo de e-mail. O recibo tem layout azul do Bilhete Solidário, itens e quantidades salvos na venda, preços unitários, total, forma de pagamento e voucher. Também inclui uma versão em texto para leitores de e-mail sem HTML.
+
+Se o envio falhar, a venda permanece salva e o operador pode tentar novamente em **Vendas → Ver venda → Enviar recibo por e-mail**. Essa tentativa automática depende da interface aberta; não há fila de envio em segundo plano. O aceite pelo provedor não garante entrega na caixa de entrada. A implementação usa idempotência e registra o aceite. SMS e WhatsApp ainda não estão implementados.
 
 ## Rodar sem Docker
 
@@ -172,3 +174,11 @@ O workflow `.github/workflows/secrets.yml` usa o [Gitleaks](https://github.com/g
 A verificação falha quando encontra uma possível credencial e oculta os valores nos logs. Não exige configurar secrets do GitHub. Para impedir merges quando ela falhar, configure a regra de proteção da branch para exigir o check **Detect exposed credentials**.
 
 Se uma credencial real for detectada, revogue ou troque a credencial no serviço de origem; apagar apenas o arquivo atual não remove o segredo do histórico. A detecção usa padrões e pode produzir falsos positivos ou deixar passar senhas: um resultado aprovado não garante ausência de credenciais.
+
+## Quantidades e peso dos alimentos
+
+Em **Produtos → Editar**, informe o **Peso por unidade (g)**: 500 para um pacote de 500 g, 1000 para 1 kg. Quando disponível, o formulário sugere o peso escrito no nome. O peso é opcional para produtos sem massa conhecida.
+
+Em **Relatórios**, o resumo por alimento soma embalagens de tamanhos diferentes e o detalhe mostra unidades, peso por unidade, peso total em kg e receita. Exemplo: 3 pacotes de macarrão de 500 g e 2 de 1 kg = 5 unidades e 3,5 kg. Os totais usam apenas vendas pagas no período selecionado; a exportação CSV também inclui peso por unidade e peso total por item. Ao final do mesmo CSV, há resumos por alimento e por embalagem, com quantidade total, peso total conhecido em kg, unidades sem peso e receita das vendas pagas do período, além do total geral.
+
+Novas vendas guardam o peso vigente na venda. Para vendas antigas sem esse campo, usa-se o peso explícito no nome salvo do item. Itens sem peso são sinalizados como não informados e não entram na soma em kg; volumes como ml e litros não são convertidos em massa. A atualização do Docker aplica automaticamente a migração que adiciona o campo ao cadastro.

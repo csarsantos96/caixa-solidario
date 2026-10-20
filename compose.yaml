@@ -24,7 +24,7 @@ services:
       COOKIE_SECURE: ${COOKIE_SECURE:-false}
       SESSION_HOURS: ${SESSION_HOURS:-12}
       RESEND_API_KEY: ${RESEND_API_KEY:-}
-      RECEIPT_FROM: ${RECEIPT_FROM:-}
+      RECEIPT_FROM: "${RECEIPT_FROM:-Bilhete Solidário <recibo@bilhetesolidario.com.br>}"
     depends_on:
       db:
         condition: service_healthy

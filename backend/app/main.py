@@ -20,8 +20,9 @@ from .catalog import CATALOG
 from .config import Settings
 from .database import Base, build_engine
 from .models import DisplayState, LoginSession, Product, Sale
-from .receipts import receipt_text
+from .receipts import receipt_text, receipt_html
 from .schemas import DisplayInput, LoginInput, ProductInput, SaleInput, StatusInput
+from .weights import weight_from_name
 
 COOKIE = "caixa_session"
 def now_iso():
@@ -29,7 +30,7 @@ def now_iso():
 
 def product_dict(p):
     return {"id": p.id, "name": p.name, "category": p.category, "price": p.price,
-            "cost": p.cost, "active": int(p.active)}
+            "cost": p.cost, "weight_grams": p.weight_grams, "active": int(p.active)}
 
 def sale_dict(s):
     return {"id": s.id, "createdAt": s.created_at, "event": s.event,
@@ -51,7 +52,7 @@ def create_app(settings: Settings | None = None, *, testing=False):
         yield
         engine.dispose()
 
-    app = FastAPI(title="Ingresso Solidário API", version="1.0.0", lifespan=lifespan)
+    app = FastAPI(title="Bilhete Solidário API", version="1.0.0", lifespan=lifespan)
     app.state.engine, app.state.sessions = engine, sessions
     attempts = defaultdict(deque)
 
@@ -170,7 +171,8 @@ def create_app(settings: Settings | None = None, *, testing=False):
             p = available.get(i.id)
             if not p or not p.active or p.price <= 0:
                 raise HTTPException(422, "Produto indisponível ou sem preço. Atualize o catálogo.")
-            items.append({"id": p.id, "name": p.name, "price": p.price, "cost": p.cost, "qty": i.qty})
+            items.append({"id": p.id, "name": p.name, "price": p.price, "cost": p.cost, "qty": i.qty,
+                          "weight_grams": p.weight_grams or weight_from_name(p.name)})
         total = sum(i["price"] * i["qty"] for i in items)
         cost = sum(i["cost"] * i["qty"] for i in items)
         if total > 2_000_000_000 or cost > 2_000_000_000:
@@ -223,7 +225,7 @@ def create_app(settings: Settings | None = None, *, testing=False):
                 result = client.post("https://api.resend.com/emails", headers={
                     "Authorization": f"Bearer {cfg.resend_api_key.get_secret_value()}",
                     "Idempotency-Key": f"receipt-{sale.id}"}, json={"from": cfg.receipt_from,
-                    "to": [sale.email], "subject": f"Recibo {sale.id[:8]} • {sale.event}", "text": receipt_text(sale)})
+                    "to": [sale.email], "subject": f"Recibo {sale.id[:8]} • {sale.event}", "text": receipt_text(sale), "html": receipt_html(sale)})
                 result.raise_for_status()
         except httpx.HTTPError:
             raise HTTPException(502, "O provedor não confirmou o envio. Confira a configuração ou tente novamente.")

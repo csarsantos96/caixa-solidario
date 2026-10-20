@@ -4,7 +4,7 @@ from pydantic import BaseModel, ConfigDict, Field, StrictBool, field_validator
 
 Money = Annotated[int, Field(strict=True, ge=0, le=100_000_000)]
 Identifier = Annotated[str, Field(min_length=1, max_length=60, pattern=r"^[a-zA-Z0-9_-]+$")]
-Method = Literal["Pix", "Débito", "Crédito", "Dinheiro", "Link de pagamento"]
+Method = Literal["Pix", "Débito", "Crédito", "Link de pagamento"]
 
 class Input(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -15,6 +15,7 @@ class ProductInput(Input):
     category: str = Field(default="Alimentos", min_length=1, max_length=60)
     price: Money
     cost: Money
+    weight_grams: int | None = Field(default=None, strict=True, ge=1, le=1_000_000)
     active: Literal[0, 1] = 1
 
 class CartItem(Input):

@@ -9,6 +9,7 @@ class Product(Base):
     category: Mapped[str] = mapped_column(String(60))
     price: Mapped[int] = mapped_column(Integer, default=0)
     cost: Mapped[int] = mapped_column(Integer, default=0)
+    weight_grams: Mapped[int | None] = mapped_column(Integer, nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 class Sale(Base):

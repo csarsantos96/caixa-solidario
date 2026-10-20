@@ -100,6 +100,11 @@ def test_email_failure_success_and_retry(auth,rice,settings,monkeypatch):
     assert auth.post('/api/sales/sale-1/email').status_code==200
     assert calls[-1]['headers']['Idempotency-Key']=='receipt-sale-1'
     assert calls[-1]['json']['to']==['cliente@example.test']
+    assert 'BILHETE SOLIDÁRIO' in calls[-1]['json']['html']
+    assert '3 × Arroz 1 kg' in calls[-1]['json']['html']
+    assert 'R$ 22,50' in calls[-1]['json']['html']
+    assert 'CS-sale-1' in calls[-1]['json']['html']
+    assert 'RECIBO DE VENDA' in calls[-1]['json']['text']
     assert auth.post('/api/sales/sale-1/email').json()['alreadySent'] is True
     assert len(calls)==2
 
