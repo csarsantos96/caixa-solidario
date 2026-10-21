@@ -31,6 +31,7 @@ class SaleInput(Input):
     email: str = Field(default="", max_length=254)
     customer: str = Field(default="", max_length=120)
     fee: Money = 0
+    automatic_fees: StrictBool = False
 
     @field_validator("email")
     @classmethod

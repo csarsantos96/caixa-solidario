@@ -179,8 +179,18 @@ def create_app(settings: Settings | None = None, *, testing=False):
             raise HTTPException(422, "O valor da venda ultrapassa o limite permitido.")
         if payload.fee > total:
             raise HTTPException(422, "A taxa não pode superar o total da venda.")
+        fee = payload.fee
+        if payload.automatic_fees and payload.method in ("Pix", "Débito", "Crédito"):
+            rate = {"Pix": 50, "Débito": 150, "Crédito": 381}[payload.method]
+            if payload.method == "Crédito":
+                # Gross up so the processor's discount preserves the item subtotal.
+                subtotal = total
+                total = (subtotal * 10000 + (10000 - rate) // 2) // (10000 - rate)
+                fee = total - subtotal
+            else:
+                fee = (total * rate + 5000) // 10000
         sale = Sale(id=payload.id, created_at=now_iso(), event=payload.event, items=items,
-                    total=total, cost=cost, fee=payload.fee, status=payload.status,
+                    total=total, cost=cost, fee=fee, status=payload.status,
                     method=payload.method, email=payload.email, customer=payload.customer,
                     request_hash=fingerprint)
         session.add(sale)

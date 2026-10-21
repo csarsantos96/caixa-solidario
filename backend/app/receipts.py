@@ -13,6 +13,9 @@ def receipt_text(sale: Sale) -> str:
     if sale.customer:
         lines.append(f"Cliente: {sale.customer}")
     lines += [f"{i['qty']} × {i['name']} — {money(i['qty'] * i['price'])}" for i in sale.items]
+    surcharge = sale.total - sum(i["qty"] * i["price"] for i in sale.items)
+    if surcharge > 0:
+        lines.append(f"Acréscimo do crédito: {money(surcharge)}")
     lines += [f"Total pago: {money(sale.total)}", f"Pagamento informado pelo operador: {sale.method}",
               "Apresente o voucher à recepção do SEBRAE.",
               "Pagamento conferido manualmente. Recibo sem valor fiscal."]
@@ -30,6 +33,9 @@ def receipt_html(sale: Sale) -> str:
         f'{money(item["qty"] * item["price"])}</td></tr>'
         for item in sale.items
     )
+    surcharge = sale.total - sum(i["qty"] * i["price"] for i in sale.items)
+    if surcharge > 0:
+        rows += f'<tr><td>Acréscimo do crédito</td><td align="right">{money(surcharge)}</td></tr>'
     greeting = f'Olá, {escape(sale.customer)}!' if sale.customer else 'Obrigado pela sua compra!'
     return f'''<!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"></head>

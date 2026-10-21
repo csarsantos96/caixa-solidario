@@ -128,3 +128,18 @@ def test_display_expiry_and_invalid_payload(auth,rice,app):
     assert auth.get('/api/display').json()['items']==[]
     assert auth.post('/api/display',json={'event':'Teste','items':[{'id':'rice','qty':0}],'updatedAt':stamp}).status_code==422
     assert auth.post('/api/display',json={'event':'Teste','items':[],'updatedAt':stamp-600000}).status_code==422
+
+
+def test_automatic_payment_fees(auth, rice):
+    for method, expected_total, expected_fee in [('Pix', 2250, 11), ('Débito', 2250, 34), ('Crédito', 2339, 89)]:
+        payload = sale(id=f'auto-{expected_fee}', method=method, automatic_fees=True, fee=0)
+        assert auth.post('/api/sales', json=payload).status_code == 200
+        assert auth.post('/api/sales', json=payload).status_code == 200
+        saved = next(s for s in auth.get('/api/data').json()['sales'] if s['id'] == payload['id'])
+        assert saved['total'] == expected_total
+        assert saved['fee'] == expected_fee
+        assert saved['total'] - saved['fee'] == (2250 if method == 'Crédito' else 2250 - expected_fee)
+        if method == 'Crédito':
+            auth.patch(f"/api/sales/{payload['id']}/status", json={'status': 'paid'})
+            receipt = auth.get(f"/api/sales/{payload['id']}/receipt")
+            assert 'Acréscimo do crédito: R$ 0,89' in receipt.text
