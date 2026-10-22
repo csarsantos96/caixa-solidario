@@ -182,3 +182,15 @@ Em **Produtos → Editar**, informe o **Peso por unidade (g)**: 500 para um paco
 Em **Relatórios**, o resumo por alimento soma embalagens de tamanhos diferentes e o detalhe mostra unidades, peso por unidade, peso total em kg e receita. Exemplo: 3 pacotes de macarrão de 500 g e 2 de 1 kg = 5 unidades e 3,5 kg. Os totais usam apenas vendas pagas no período selecionado; a exportação CSV também inclui peso por unidade e peso total por item. Ao final do mesmo CSV, há resumos por alimento e por embalagem, com quantidade total, peso total conhecido em kg, unidades sem peso e receita das vendas pagas do período, além do total geral.
 
 Novas vendas guardam o peso vigente na venda. Para vendas antigas sem esse campo, usa-se o peso explícito no nome salvo do item. Itens sem peso são sinalizados como não informados e não entram na soma em kg; volumes como ml e litros não são convertidos em massa. A atualização do Docker aplica automaticamente a migração que adiciona o campo ao cadastro.
+
+## Impressão de recibos em impressora térmica
+
+Em **Vendas → Ver venda**, abra uma venda paga, selecione a bobina de **58 mm** ou **80 mm** e clique em **Imprimir recibo térmico**. A escolha fica salva neste navegador. Uma nova janela apresenta o recibo com os itens e preços registrados na venda, acréscimo do crédito quando houver, total pago, forma de pagamento e voucher de entrada. Clique em **Imprimir recibo** nessa janela.
+
+Instale a impressora no sistema operacional com o driver do fabricante. No diálogo do navegador, selecione essa impressora e o tamanho de papel correspondente à bobina, use escala de 100%, margens zero e desative cabeçalhos e rodapés. A altura/corte do papel depende da configuração do driver; ajuste a área imprimível caso o modelo exija margens. Permita janelas para este site se a prévia não abrir. Faça uma impressão de teste no equipamento antes do evento.
+
+A impressão usa o navegador e o driver local, inclusive para impressoras USB ou de rede instaladas no computador. Não há envio direto de comandos ESC/POS, impressão silenciosa, acionamento de gaveta ou comando de guilhotina. Reimprimir mantém o código do voucher; não cria outra venda nem outra entrada. Vendas pendentes ou canceladas não emitem esse recibo.
+
+### Fluxo de desenvolvimento
+
+Use `main` para versões estáveis, `develop` para integração e branches `feature/*` a partir de `develop`. Esta funcionalidade foi desenvolvida em `feature/thermal-receipts`. Após revisão e validação, integre a feature em `develop`; prepare a versão em uma branch `release/*` e integre-a em `main` e `develop`. Correções urgentes de produção usam `hotfix/*` a partir de `main`, com integração também em `develop`.
