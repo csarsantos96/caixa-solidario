@@ -39,3 +39,7 @@ class DisplayState(Base):
     event: Mapped[str] = mapped_column(String(120))
     items: Mapped[list] = mapped_column(JSON)
     updated_at: Mapped[int] = mapped_column(BigInteger)
+
+class Event(Base):
+    __tablename__ = "events"
+    name: Mapped[str] = mapped_column(String(120), primary_key=True)

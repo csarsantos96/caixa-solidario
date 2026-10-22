@@ -194,3 +194,13 @@ A impressão usa o navegador e o driver local, inclusive para impressoras USB ou
 ### Fluxo de desenvolvimento
 
 Use `main` para versões estáveis, `develop` para integração e branches `feature/*` a partir de `develop`. Esta funcionalidade foi desenvolvida em `feature/thermal-receipts`. Após revisão e validação, integre a feature em `develop`; prepare a versão em uma branch `release/*` e integre-a em `main` e `develop`. Correções urgentes de produção usam `hotfix/*` a partir de `main`, com integração também em `develop`.
+
+## Separação de eventos
+
+Clique no nome do evento no topo ou em **Configurações**. Use **Novo evento → Criar e usar evento** para cadastrar outro evento, ou escolha um existente em **Evento ativo**. O cadastro fica no servidor, inclusive antes da primeira venda; a seleção ativa fica neste navegador. Finalize ou esvazie a cesta antes de alternar.
+
+O histórico de vendas, indicadores, relatórios de alimentos/pesos, CSV e lista do mercado passam a considerar somente o evento ativo, combinados com o filtro de datas. A confirmação do pagamento mostra o evento da compra. Recibos e vouchers preservam o evento registrado originalmente na venda.
+
+Os eventos das vendas antigas são recuperados pelos nomes já salvos, sem modificar as vendas. Nesta etapa o nome identifica o evento: para repetir uma edição, use um nome distinto, como “Feira Solidária • outubro/2026”. O catálogo, preços e custos atuais são compartilhados; vendas anteriores conservam seus valores registrados. Os eventos não são renomeados ou excluídos pela interface. A seleção não cria isolamento de usuários/permissões, e continua valendo a orientação de um operador ativo por instalação.
+
+A atualização exige aplicar a migração de banco (`cd backend && alembic upgrade head`); o Docker Compose já executa as migrações na inicialização do backend.

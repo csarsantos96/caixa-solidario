@@ -65,3 +65,6 @@ class DisplayInput(Input):
 class LoginInput(Input):
     username: str = Field(min_length=1, max_length=100)
     password: str = Field(min_length=1, max_length=500)
+
+class EventInput(Input):
+    name: str = Field(min_length=1, max_length=120)

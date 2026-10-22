@@ -19,9 +19,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from .catalog import CATALOG
 from .config import Settings
 from .database import Base, build_engine
-from .models import DisplayState, LoginSession, Product, Sale
+from .models import Event, DisplayState, LoginSession, Product, Sale
 from .receipts import receipt_text, receipt_html
-from .schemas import DisplayInput, LoginInput, ProductInput, SaleInput, StatusInput
+from .schemas import EventInput, DisplayInput, LoginInput, ProductInput, SaleInput, StatusInput
 from .weights import weight_from_name
 
 COOKIE = "caixa_session"
@@ -135,10 +135,24 @@ def create_app(settings: Settings | None = None, *, testing=False):
         return {"ok": True}
 
     @app.get("/api/data")
-    def data(session: Session = Depends(db)):
+    def data(event: str | None = None, session: Session = Depends(db)):
         return {"products": catalog(session),
-                "sales": [sale_dict(s) for s in session.scalars(select(Sale).order_by(Sale.created_at.desc()))],
+                "sales": [sale_dict(s) for s in session.scalars(
+                    (select(Sale).where(Sale.event == event) if event is not None else select(Sale))
+                    .order_by(Sale.created_at.desc()))],
+                "events": sorted(set(session.scalars(select(Event.name))) | set(session.scalars(select(Sale.event))) | {"Varejo que dá resultado"}),
                 "emailReady": bool(cfg.resend_api_key.get_secret_value() and cfg.receipt_from)}
+
+    @app.post("/api/events")
+    def create_event(payload: EventInput, session: Session = Depends(db)):
+        # Names are stable identifiers; historic sale snapshots are never renamed.
+        if not session.get(Event, payload.name):
+            session.add(Event(name=payload.name))
+            try:
+                session.commit()
+            except IntegrityError:
+                session.rollback()
+        return {"ok": True, "name": payload.name}
 
     @app.post("/api/products")
     def save_product(payload: ProductInput, session: Session = Depends(db)):
